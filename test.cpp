@@ -158,3 +158,8 @@ switch( msg )	//Check message
 			 wParam,
 			 lParam);
 }
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+{
+    MessageBoxW(NULL, L"Hello from DirectX test!", L"Test", MB_OK);
+    return 0;
+}
