@@ -1,4 +1,4 @@
 #include <windows.h>
 
-LPCTSTR WndClassName = "firstwindow";
+LPCTSTR WndClassName = L"firstwindow";
 HWND hwnd = NULL;
