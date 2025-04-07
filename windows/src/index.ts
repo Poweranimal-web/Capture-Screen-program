@@ -1,4 +1,4 @@
-const { captureScreen } = require("./addon/build/Release/screen_capture.node");
+import captureScreen from "./capture-wrapper";
 // import {printGav} from "./library";
 // export {printGav}
 // let text : string = "hello World";
