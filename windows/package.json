@@ -5,7 +5,7 @@
   "main": "index.ts",
   
   "scripts": {
-    "build": "npx tsc",
+    "build": "npx tsc; cd addon && node-gyp rebuild;",
     "start": "node dist/index.js",
     "dev": "npx tsc --watch"
   },
