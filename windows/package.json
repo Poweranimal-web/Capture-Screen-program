@@ -1,0 +1,17 @@
+{
+  "name": "windows",
+  "version": "1.0.0",
+  "description": "Capturing app",
+  "main": "index.ts",
+  
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "npx tsc --watch"
+  },
+  "author": "Gusev Nikita",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
