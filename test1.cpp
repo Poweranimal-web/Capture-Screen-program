@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <iostream>
 int main(){
     bool testScreenCaptureSuccess = false;
 
