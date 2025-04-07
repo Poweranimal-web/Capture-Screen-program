@@ -5,7 +5,7 @@
   "main": "index.ts",
   
   "scripts": {
-    "build:addon": "cd addon && node-gyp rebuild",
+    "build:addon": "cd src/addon && npx node-gyp rebuild",
     "build:ts": "tsc",
     "build": "npm run build:ts && npm run build:addon",
     "start": "node dist/index.js",
