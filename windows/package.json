@@ -5,11 +5,11 @@
   "main": "index.ts",
   "scripts": {
     "build:addon": "cd src/addon && npx node-gyp rebuild",
-  	"build:ts": "tsc",
-  	"copy:node": "mkdir dist\\addon\\build\\Release 2>nul & copy src\\addon\\build\\Release\\screen_capture.node dist\\addon\\build\\Release\\screen_capture.node >nul",
-  	"build": "npm run build:addon && npm run build:ts && npm run copy:node",
-  	"start": "node dist/index.js",
-  	"dev": "npx tsc --watch"
+    "build:ts": "tsc",
+    "copy:node": "mkdir dist\\addon\\build\\Release 2>nul & copy src\\addon\\build\\Release\\screen_capture.node dist\\addon\\build\\Release\\screen_capture.node >nul",
+    "build": "npm run build:addon && npm run build:ts && npm run copy:node",
+    "start": "node dist/index.js",
+    "dev": "npx tsc --watch"
   },
   "author": "Gusev Nikita",
   "license": "ISC",
@@ -19,6 +19,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "node-addon-api": "^8.3.1"
+    "node-addon-api": "^8.3.1",
+    "sharp": "^0.34.1"
   }
 }
