@@ -1,9 +1,11 @@
-import captureScreen from "./capture-wrapper";
-// import {printGav} from "./library";
-// export {printGav}
-// let text : string = "hello World";
-// console.log(text);
-// let text2 : string = printGav();
-// console.log(text2);
-const frame = captureScreen();
+import path from 'path';
+
+const addon = require(path.join(__dirname, './addon/build/Release/screen_capture.node')) as {
+  captureScreen: () => {
+    width: number;
+    height: number;
+    data: Buffer;
+  };
+};
+const frame = addon.captureScreen();
 console.log(`Captured ${frame.width}x${frame.height}, size: ${frame.data.length} bytes`);
