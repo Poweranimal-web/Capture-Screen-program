@@ -10,9 +10,9 @@ function convertBGRAtoRGBA(bgra: Buffer): Buffer {
     }
     return rgba;
 }
-export default async function saveToPNG(buffer: Buffer, width: number, height: number, outPath: string) {
-    let rgba : Buffer = convertBGRAtoRGBA(buffer); 
-    await sharp(rgba, {
+export default async function saveToPNGBuffer(buffer: Buffer, width: number, height: number) : Promise<Buffer> {
+  let rgba : Buffer = convertBGRAtoRGBA(buffer); 
+  return await sharp(rgba, {
     raw: { width, height, channels: 4 },
-  }).png().toFile(outPath);
+  }).png().toBuffer();
 }

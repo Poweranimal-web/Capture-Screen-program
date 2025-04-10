@@ -1,5 +1,6 @@
 import path from 'path';
 import * as clientWebsocket from "./websocket-client"
+import saveToPNGBuffer from './pngconverter';
 const addon = require(path.join(__dirname, './addon/build/Release/screen_capture.node')) as {
   captureScreen: () => {
     width: number;
@@ -8,12 +9,13 @@ const addon = require(path.join(__dirname, './addon/build/Release/screen_capture
   };
 };
 clientWebsocket.runClient();
-setTimeout(() => {
+setTimeout(async () => {
   while(true){
     const frame = addon.captureScreen();
-    clientWebsocket.SendData(frame.data);
+    let pngBuffer : Buffer = await saveToPNGBuffer(frame.data, 1280, 960);     
+    clientWebsocket.SendData(pngBuffer);
   }
-}, 1000); 
+}, 2000); 
 
 // saveToPNG(frame.data,frame.width,frame.height, "./screeen.png");
 // console.log('First 16 bytes of frame:', frame.data.subarray(0, 16));

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = saveToPNG;
+exports.default = saveToPNGBuffer;
 const sharp_1 = __importDefault(require("sharp"));
 function convertBGRAtoRGBA(bgra) {
     const rgba = Buffer.alloc(bgra.length);
@@ -15,9 +15,9 @@ function convertBGRAtoRGBA(bgra) {
     }
     return rgba;
 }
-async function saveToPNG(buffer, width, height, outPath) {
+async function saveToPNGBuffer(buffer, width, height) {
     let rgba = convertBGRAtoRGBA(buffer);
-    await (0, sharp_1.default)(rgba, {
+    return await (0, sharp_1.default)(rgba, {
         raw: { width, height, channels: 4 },
-    }).png().toFile(outPath);
+    }).png().toBuffer();
 }
