@@ -9,22 +9,32 @@
 </head>
 <body>
   <img id="screen" src="" alt="Waiting for stream..." />
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <script>
-    const ws = new WebSocket("ws://192.168.50.37:8080");
-    const img = document.getElementById('screen');
+    const ws = new WebSocket(`wss://${location.host}/ws`);
+  const img = document.getElementById('screen');
+  ws.binaryType = 'arraybuffer';
 
-    ws.binaryType = 'blob';
-    ws.onmessage = (event) => {
-      const blob = event.data;
+  let latestBlobURL = null;
+
+  ws.onmessage = (event) => {
+    try {
+      const compressed = new Uint8Array(event.data);
+      const decompressed = pako.inflate(compressed);
+      const blob = new Blob([decompressed], { type: 'image/webp' });
       const url = URL.createObjectURL(blob);
-      img.src = url;
-      // Clean up previous image URL
-      img.onload = () => URL.revokeObjectURL(url);
-    };
 
-    ws.onopen = () => console.log('Connected to server');
-    ws.onerror = (err) => console.error('WebSocket error:', err);
-    ws.onclose = () => console.log('Client disconnected');
+      // Revoke previous image URL to free memory
+      if (latestBlobURL) {
+        URL.revokeObjectURL(latestBlobURL);
+      }
+      latestBlobURL = url;
+
+      img.src = url;
+    } catch (err) {
+      console.error('Error decoding frame:', err);
+    }
+  };
   </script>
 </body>
 </html>

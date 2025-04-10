@@ -19,5 +19,5 @@ async function saveToPNGBuffer(buffer, width, height) {
     let rgba = convertBGRAtoRGBA(buffer);
     return await (0, sharp_1.default)(rgba, {
         raw: { width, height, channels: 4 },
-    }).png().toBuffer();
+    }).webp({ quality: 40 }).toBuffer();
 }

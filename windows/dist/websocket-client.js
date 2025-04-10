@@ -9,7 +9,7 @@ const ws_1 = __importDefault(require("ws"));
 let client;
 let isReady = false;
 function runClient() {
-    client = new ws_1.default('ws://192.168.50.37:8080'); // Your host IP
+    client = new ws_1.default('wss://burden-hot-counted-quotes.trycloudflare.com/ws'); // Your host IP
     client.on('open', () => {
         console.log('WebSocket connected');
         isReady = true;

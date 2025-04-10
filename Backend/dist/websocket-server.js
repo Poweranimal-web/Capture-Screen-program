@@ -11,7 +11,8 @@ const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
 const serverHttp = http_1.default.createServer(app);
 const server = new ws_1.WebSocketServer({
-    port: 8080
+    server: serverHttp,
+    path: '/ws'
 });
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../index.html'));
@@ -19,20 +20,40 @@ app.get('/', (req, res) => {
 function runServer() {
     server.on('connection', (socket) => {
         console.log('Client connected');
-        socket.on('message', (pngBuffer) => {
-            server.clients.forEach(async (client) => {
-                if (client != socket) {
-                    if (client.readyState === 1) {
-                        await client.send(pngBuffer);
-                    }
-                }
-            });
+        let latestFrame = null;
+        let isProcessing = false;
+        socket.on('message', (data) => {
+            // Always replace the previous frame with the newest one
+            latestFrame = data;
+            // Start processing if not already
+            if (!isProcessing) {
+                isProcessing = true;
+                processNextFrame();
+            }
         });
+        function processNextFrame() {
+            if (!latestFrame) {
+                isProcessing = false;
+                return;
+            }
+            const frame = latestFrame;
+            latestFrame = null;
+            // Broadcast the latest frame to other clients
+            for (const client of server.clients) {
+                if (client !== socket && client.readyState === client.OPEN) {
+                    client.send(frame);
+                }
+            }
+            // Continue processing as soon as possible
+            setImmediate(processNextFrame);
+        }
         socket.on('close', () => {
             console.log('Client disconnected');
         });
+        socket.on('error', (err) => {
+            console.error('WebSocket error:', err);
+        });
     });
-    console.log('WebSocket server is running on ws://localhost:8080');
 }
 serverHttp.listen(8081, () => {
     console.log('🚀 Server running: http://localhost:8081');
