@@ -3,38 +3,80 @@
 <head>
   <title>Screen Stream</title>
   <style>
-    body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    img { max-width: 100%; max-height: 100%; border: 2px solid white; }
+    body { 
+      margin: 0; 
+      background: #111; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+    }
+    img { 
+      max-width: 100%; 
+      max-height: 100%; 
+      border: 2px solid white; 
+    }
+    #overlay {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-family: monospace;
+      color: lime;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <img id="screen" src="" alt="Waiting for stream..." />
-  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+  <div id="overlay">FPS: 0<br>Resolution: --</div>
   <script>
     const ws = new WebSocket(`wss://${location.host}/ws`);
-  const img = document.getElementById('screen');
-  ws.binaryType = 'arraybuffer';
+    const img = document.getElementById('screen');
+    const overlay = document.getElementById('overlay');
 
-  let latestBlobURL = null;
+    ws.binaryType = 'arraybuffer';
 
-  ws.onmessage = (event) => {
-    try {
-      const compressed = new Uint8Array(event.data);
-      const decompressed = pako.inflate(compressed);
-      const blob = new Blob([decompressed], { type: 'image/webp' });
-      const url = URL.createObjectURL(blob);
+    let latestBlobURL = null;
+    let nextURL = null;
+    let isRendering = false;
 
-      // Revoke previous image URL to free memory
-      if (latestBlobURL) {
-        URL.revokeObjectURL(latestBlobURL);
+    // FPS counter
+    let fps = 0;
+    setInterval(() => {
+      overlay.innerHTML = `FPS: ${fps}<br>Resolution: ${img.naturalWidth}x${img.naturalHeight || '--'}`;
+      fps = 0;
+    }, 1000);
+
+    ws.onmessage = (event) => {
+      try {
+        const compressed = new Uint8Array(event.data);
+        const blob = new Blob([compressed], { type: 'image/jpeg' });
+        const url = URL.createObjectURL(blob);
+        nextURL = url;
+
+        fps++; // count each received frame
+
+        if (!isRendering) requestAnimationFrame(updateImage);
+      } catch (err) {
+        console.error('Error decoding frame:', err);
       }
-      latestBlobURL = url;
+    };
 
-      img.src = url;
-    } catch (err) {
-      console.error('Error decoding frame:', err);
+    function updateImage() {
+      isRendering = true;
+      if (nextURL) {
+        if (latestBlobURL) {
+          URL.revokeObjectURL(latestBlobURL);
+        }
+        latestBlobURL = nextURL;
+        img.src = latestBlobURL;
+        nextURL = null;
+      }
+      isRendering = false;
     }
-  };
   </script>
 </body>
 </html>

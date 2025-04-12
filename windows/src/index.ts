@@ -1,7 +1,6 @@
 import path from 'path';
 import * as clientWebsocket from "./websocket-client"
-import saveToPNGBuffer from './pngconverter';
-import { deflateSync, inflateSync } from 'zlib';
+import saveToJPEGBuffer from './pngconverter';
 const addon = require(path.join(__dirname, './addon/build/Release/screen_capture.node')) as {
   captureScreen: () => {
     width: number;
@@ -10,15 +9,14 @@ const addon = require(path.join(__dirname, './addon/build/Release/screen_capture
   };
 };
 clientWebsocket.runClient();
-
-const translate_screen = async() =>{
+const TARGET_FPS = 30;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
+async function share_screen() {
+  for (;;) {
     const frame = addon.captureScreen();
-    let pngBuffer : Buffer = await saveToPNGBuffer(frame.data, 1280, 960);
-    let compressedBuffer : Buffer = deflateSync(pngBuffer);     
-    clientWebsocket.SendData(compressedBuffer);
+    const Buffer = await saveToJPEGBuffer(frame.data,frame.width,frame.height);
+    clientWebsocket.SendData(Buffer);
+    await new Promise(resolve => setTimeout(resolve, FRAME_INTERVAL));
+  }
 }
-setInterval(() => translate_screen(), 100);
-
-// saveToPNG(frame.data,frame.width,frame.height, "./screeen.png");
-// console.log('First 16 bytes of frame:', frame.data.subarray(0, 16));
-// console.log(`Captured ${frame.width}x${frame.height}, size: ${frame.data.length} bytes`);
+share_screen();

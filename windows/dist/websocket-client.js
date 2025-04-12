@@ -8,10 +8,11 @@ exports.SendData = SendData;
 const ws_1 = __importDefault(require("ws"));
 let client;
 let isReady = false;
+const MAX_BUFFERED_BYTES = 512 * 1024; // 512 KB
 function runClient() {
-    client = new ws_1.default('wss://burden-hot-counted-quotes.trycloudflare.com/ws'); // Your host IP
+    client = new ws_1.default('wss://goods-centuries-privacy-class.trycloudflare.com/ws'); // Your host IP
     client.on('open', () => {
-        console.log('WebSocket connected');
+        console.log('Node.js app connected');
         isReady = true;
     });
     client.on('message', (msg) => {
@@ -22,14 +23,17 @@ function runClient() {
         isReady = false;
     });
     client.on('error', (err) => {
-        console.error('WebSocket error:', err);
+        console.log('WebSocket error:', err);
     });
 }
 function SendData(data) {
-    if (isReady && client?.readyState === ws_1.default.OPEN) {
+    const rawSocket = client._socket;
+    if (client.readyState === ws_1.default.OPEN &&
+        rawSocket &&
+        rawSocket.bufferSize < MAX_BUFFERED_BYTES) {
         client.send(data);
     }
     else {
-        console.warn('Cannot send: WebSocket not open');
+        console.warn("Skipping frame: socket not ready or buffer full");
     }
 }

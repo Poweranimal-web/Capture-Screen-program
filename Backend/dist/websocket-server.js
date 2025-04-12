@@ -21,31 +21,39 @@ function runServer() {
     server.on('connection', (socket) => {
         console.log('Client connected');
         let latestFrame = null;
-        let isProcessing = false;
+        let isSending = false;
         socket.on('message', (data) => {
-            // Always replace the previous frame with the newest one
+            //  Always keep only the latest frame
             latestFrame = data;
-            // Start processing if not already
-            if (!isProcessing) {
-                isProcessing = true;
-                processNextFrame();
+            if (!isSending) {
+                isSending = true;
+                sendLoop();
             }
         });
-        function processNextFrame() {
+        function sendLoop() {
+            // Nothing to send? Done.
             if (!latestFrame) {
-                isProcessing = false;
+                isSending = false;
                 return;
             }
             const frame = latestFrame;
             latestFrame = null;
-            // Broadcast the latest frame to other clients
             for (const client of server.clients) {
-                if (client !== socket && client.readyState === client.OPEN) {
-                    client.send(frame);
+                if (client.readyState === client.OPEN && client !== socket) {
+                    const buf = client._socket?.bufferSize ?? 0;
+                    if (buf > 512000) {
+                        console.warn('Dropping frame: client too slow');
+                        continue;
+                    }
+                    const start = Date.now();
+                    client.send(frame, () => {
+                        const end = Date.now();
+                        console.log(`Send duration: ${end - start}ms, Frame size: ${frame.length} bytes`);
+                    });
                 }
             }
-            // Continue processing as soon as possible
-            setImmediate(processNextFrame);
+            // Immediately schedule next loop to check for new frame
+            setImmediate(sendLoop);
         }
         socket.on('close', () => {
             console.log('Client disconnected');

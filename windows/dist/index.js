@@ -39,16 +39,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
 const clientWebsocket = __importStar(require("./websocket-client"));
 const pngconverter_1 = __importDefault(require("./pngconverter"));
-const zlib_1 = require("zlib");
 const addon = require(path_1.default.join(__dirname, './addon/build/Release/screen_capture.node'));
 clientWebsocket.runClient();
-const translate_screen = async () => {
-    const frame = addon.captureScreen();
-    let pngBuffer = await (0, pngconverter_1.default)(frame.data, 1280, 960);
-    let compressedBuffer = (0, zlib_1.deflateSync)(pngBuffer);
-    clientWebsocket.SendData(compressedBuffer);
-};
-setInterval(() => translate_screen(), 100);
-// saveToPNG(frame.data,frame.width,frame.height, "./screeen.png");
-// console.log('First 16 bytes of frame:', frame.data.subarray(0, 16));
-// console.log(`Captured ${frame.width}x${frame.height}, size: ${frame.data.length} bytes`);
+const TARGET_FPS = 30;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
+async function translate_screen() {
+    for (;;) {
+        const frame = addon.captureScreen();
+        const Buffer = await (0, pngconverter_1.default)(frame.data, frame.width, frame.height);
+        clientWebsocket.SendData(Buffer);
+        await new Promise(resolve => setTimeout(resolve, FRAME_INTERVAL));
+    }
+}
+translate_screen();
